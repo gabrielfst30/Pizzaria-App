@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useContext } from "react";
 
 import { View, ActivityIndicator} from "react-native";
 
 import AppRoutes from "./app.routes";
 import AuthRoutes from "./auth.routes";
 
+import { AuthContext } from "../contexts/AuthContext";
+
 function Routes(){
-    const isAuth = false;
+    const { isAuthenticated } = useContext(AuthContext) //PEGANDO O CONTEXTO PARA LIBERAR AS ROTAS CASO O USER ESTEJA LOGADO
     const loading = false;
 
     if(loading){
@@ -27,9 +29,9 @@ function Routes(){
 
 
 
-    //Se tiver logado <AppRoutes/> se não <AuthRoutes/>
+    //Se tiver logado/autenticado <AppRoutes/> se não <AuthRoutes/>
     return(
-        isAuth ? <AppRoutes/> : <AuthRoutes/>
+        isAuthenticated ? <AppRoutes/> : <AuthRoutes/>
     )
 }
 
