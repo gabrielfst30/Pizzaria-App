@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { View, 
          Text, 
          StyleSheet,
@@ -6,15 +6,23 @@ import { View,
          TextInput,
          TouchableOpacity } from 'react-native';
 
+import { AuthContext } from '../../contexts/AuthContext';
+
 export default function SignIn(){
+
+    //CONSUMINDO AS INFORMAÇÕES PARA LOGIN DO USUÁRIO COM AUTHCONTEXT
+    const { signIn } = useContext(AuthContext)
+
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
 
-    function handleLogin(){
+    async function handleLogin(){
     
         if(email === '' || password === ''){
             return alert("Prencha o login corretamente...")
         }
+
+        await signIn({ email, password })
     }
 
 
