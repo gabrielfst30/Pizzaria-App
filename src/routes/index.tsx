@@ -8,8 +8,8 @@ import AuthRoutes from "./auth.routes";
 import { AuthContext } from "../contexts/AuthContext";
 
 function Routes(){
-    const { isAuthenticated } = useContext(AuthContext) //PEGANDO O CONTEXTO PARA LIBERAR AS ROTAS CASO O USER ESTEJA LOGADO
-    const loading = false;
+    const { isAuthenticated, loading } = useContext(AuthContext) //PEGANDO O CONTEXTO PARA LIBERAR AS ROTAS CASO O USER ESTEJA LOGADO
+    
 
     if(loading){
         return(
