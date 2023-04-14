@@ -1,4 +1,4 @@
-import React, { useState, createContext, ReactNode } from "react";
+import React, { useState, useEffect, createContext, ReactNode } from "react";
 
 //SALVAR OS DADOS OFFLINE
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -11,6 +11,9 @@ type AuthContextData = {
     user: UserProps;
     isAuthenticated: boolean;
     signIn: (loginInfo: SignInProps) => Promise<void> //tipando a função de login
+    loadingAuth: boolean;
+    loading: boolean;
+    signOut: () => Promise<void>
 }
 
 //Tipando dados do user
@@ -46,9 +49,38 @@ export function AuthProvider({children}: AuthProviderProps){
 
     //Loading de login
     const [loadingAuth, setLoadingAuth] = useState(false) //falso - loading desligado
+    const [loading, setLoading] = useState(true)
 
     //convertendo o user para booleano com '!!', se o user estiver preenchido indica que o usuario esta logado
     const isAuthenticated =  !!user.name;
+
+
+    useEffect(() => {
+
+        async function getUser(){
+        //Pegar os dados salvos do user     
+        const userInfo = await AsyncStorage.getItem('@sujeitopizzaria');
+        let hasUser: UserProps = JSON.parse(userInfo || '{}');
+
+            //Verificar se recebemos a informações dele
+            if(Object.keys(hasUser).length > 0){
+                api.defaults.headers.common['Authorization'] = `Bearer ${hasUser.token}`
+
+                setUser({
+                    id: hasUser.id,
+                    name: hasUser.name,
+                    email: hasUser.email,
+                    token: hasUser.token
+                })
+
+            }
+
+            setLoading(false)
+        }
+
+         getUser();
+
+    },[])
 
     //Logando user
     async function signIn({ email, password }: SignInProps){
@@ -96,10 +128,23 @@ export function AuthProvider({children}: AuthProviderProps){
 
     }
 
+    //Limpando o AsyncStorage para quando o usuário deslogar do sistema
+    async function signOut(){
+        await AsyncStorage.clear()
+        .then (() => {
+            setUser({
+                id: '',
+                name: '',
+                email: '',
+                token: ''
+            })
+        })
+    }
+
 
     //todas nossa páginas serão renderizadas no provider e enviadas para routes
     return(
-        <AuthContext.Provider value = {{ user, isAuthenticated, signIn }}>
+        <AuthContext.Provider value = {{ user, isAuthenticated, signIn, loading, loadingAuth, signOut }}>
             {children}
         </AuthContext.Provider>
     )
