@@ -7,20 +7,32 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { StackParamsList } from "../../routes/app.routes";
 
+//api
+import { api } from "../../services/api";
+
 export default function Dashboard(){
     //criando navigation
     const navigation = useNavigation<NativeStackNavigationProp<StackParamsList>>();
 
     //recebe o numero da mesa
-    const [ table, setTable ] = useState('');
+    const [table, setTable] = useState('');
 
     async function openOrder(){
         if(table == ''){
             return alert('Preencha o número da mesa!')
         }
 
+        //enviando para api o numero da table
+        const response = await api.post('/order',{
+            table: Number(table) //convert to number
+        })
+
+        //console.log(response.data)
+
         //faz a requisição de abrir mesa e navega para a proxima tela!.
-        navigation.navigate('Order', { number: table, order_id: ''})
+        navigation.navigate('Order', { number: table, order_id: response.data.id })
+
+        setTable('')
     }
 
     return(
