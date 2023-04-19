@@ -73,6 +73,10 @@ export default function Order() {
     }
   }
 
+  function handleChangeCategory(item: CategoryProps){ //RECEBE O ITEM CLICADO E MUDA A CATEGORIA SELECIONADA
+      setCategorySelected(item);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -84,7 +88,7 @@ export default function Order() {
 
       {category.length !== 0 && (
         <TouchableOpacity style={styles.input} onPress={ () => setModalCategoryVisible(true) }>
-          <Text style={{ color: "#FFF" }}>{categorySelected?.name}</Text>
+          <Text style={{ color: "#FFF" }}>{categorySelected?.name}</Text> {/*RECEBE O ITEM CLICADO E MUDA A CATEGORIA SELECIONADA*/}
         </TouchableOpacity>
       )}
 
@@ -113,15 +117,18 @@ export default function Order() {
         </TouchableOpacity>
       </View>
 
+        {/*VISIBILIDADE DO MODAL*/}
         <Modal
             transparent={true}
             visible={modalCategoryVisible}
             animationType="fade"
         >
+
+          {/*PEGA AS CATEGORIAS, SELECIONA E FECHA O MODAL*/}
             <ModalPicker
-                handleCloseModal={ () => setModalCategoryVisible(false)}
+                handleCloseModal={ () => setModalCategoryVisible(false) }
                 options={category}
-                selectedItem={() => {}}
+                selectedItem={ handleChangeCategory } //RECEBE O ITEM SELECIONADO DE ORDER E MUDA A CATEGORIA 
 
             />
 
