@@ -5,14 +5,16 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  Modal
+  Modal,
+  FlatList,
 } from "react-native";
 
 import { useRoute, RouteProp, useNavigation } from "@react-navigation/native";
 
 import { Feather } from "@expo/vector-icons";
 import { api } from "../../services/api";
-import { ModalPicker } from "../../components/ModalPicker"
+import { ModalPicker } from "../../components/ModalPicker";
+import { ListItem } from "../../components/ListItem";
 
 //tipando parametros da order
 type RouteDetailParams = {
@@ -28,6 +30,18 @@ export type CategoryProps = {
   name: string;
 };
 
+type ProductProps = {
+  id: string;
+  name: string;
+};
+
+type ItemProps = {
+  id: string;
+  product_id: string;
+  name: string;
+  amount: string | number;
+};
+
 //o OrderRouteProps segue o RouteProp que recebe nosso type por meio de um generic <>
 type OrderRouteProps = RouteProp<RouteDetailParams, "Order">;
 
@@ -35,15 +49,26 @@ export default function Order() {
   const route = useRoute<OrderRouteProps>();
   const navigation = useNavigation();
 
-  //listagem de categorias
+  //LISTAGEM DE CATEGORIAS
   const [category, setCategory] = useState<CategoryProps[] | []>([]); //pode ser uma array categoryprops ou array vazia
   //selecionando categoria
-  const [categorySelected, setCategorySelected] = useState<CategoryProps>();
+  const [categorySelected, setCategorySelected] = useState<
+    CategoryProps | undefined
+  >();
   //visibiidade do modal
-  const [modalCategoryVisible, setModalCategoryVisible] = useState(false)
+  const [modalCategoryVisible, setModalCategoryVisible] = useState(false);
+
+  //LISTAGEM DE PRODUTOS
+  const [products, setProducts] = useState<ProductProps[] | []>([]);
+  const [productSelected, setProductSelected] = useState<
+    ProductProps | undefined
+  >();
+  const [modalProductVisible, setModalProductVisible] = useState(false);
 
   //quantidade do produto
   const [amount, setAmount] = useState("1");
+
+  const [items, setItems] = useState<ItemProps[]>([]);
 
   //Quando a tela for carregada ele irá executar:
   useEffect(() => {
@@ -56,6 +81,22 @@ export default function Order() {
 
     loadInfo();
   }, []);
+
+  //Recebendo a categoria do produto
+  useEffect(() => {
+    async function loadProducts() {
+      const response = await api.get("/category/product", {
+        params: {
+          category_id: categorySelected?.id,
+        },
+      });
+
+      setProducts(response.data);
+      setProductSelected(response.data[0]);
+    }
+
+    loadProducts();
+  }, [categorySelected]);
 
   async function handleCloseOrder() {
     try {
@@ -73,8 +114,20 @@ export default function Order() {
     }
   }
 
-  function handleChangeCategory(item: CategoryProps){ //RECEBE O ITEM CLICADO E MUDA A CATEGORIA SELECIONADA
-      setCategorySelected(item);
+  //MUDANDO A OPTION CATEGORY
+  function handleChangeCategory(item: CategoryProps) {
+    //RECEBE O ITEM CLICADO E MUDA A CATEGORIA SELECIONADA
+    setCategorySelected(item);
+  }
+
+  //MUDANDO A OPTION PRODUCT
+  function handleChangeProduct(item: CategoryProps) {
+    setProductSelected(item);
+  }
+
+  //ADICIONANDO PRODUTO A LISTA
+  async function handleAdd() {
+   alert("CLICOUuuuu");
   }
 
   return (
@@ -87,14 +140,27 @@ export default function Order() {
       </View>
 
       {category.length !== 0 && (
-        <TouchableOpacity style={styles.input} onPress={ () => setModalCategoryVisible(true) }>
-          <Text style={{ color: "#FFF" }}>{categorySelected?.name}</Text> {/*RECEBE O ITEM CLICADO E MUDA A CATEGORIA SELECIONADA*/}
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setModalCategoryVisible(true)}
+        >
+          <Text style={{ color: "#FFF" }}>{categorySelected?.name}</Text>
         </TouchableOpacity>
       )}
 
+      {products.length !== 0 && (
+        <TouchableOpacity
+          style={styles.input}
+          onPress={() => setModalProductVisible(true)}
+        >
+          <Text style={{ color: "#FFF" }}>{productSelected?.name}</Text>
+        </TouchableOpacity>
+      )}
+
+      {/*  
       <TouchableOpacity style={styles.input}>
         <Text style={{ color: "#FFF" }}>Pizza de calabresa</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <View style={styles.qtdContainer}>
         <Text style={styles.qtdText}>Quantidade</Text>
@@ -108,32 +174,51 @@ export default function Order() {
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.buttonAdd}>
+        <TouchableOpacity style={styles.buttonAdd} onPress={handleAdd}>
           <Text style={styles.buttonText}>+</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          style={[styles.button, { opacity: items.length === 0 ? 0.3 : 1 }]}
+          disabled={items.length === 0}
+        >
           <Text style={styles.buttonText}>Avançar</Text>
         </TouchableOpacity>
       </View>
 
-        {/*VISIBILIDADE DO MODAL*/}
-        <Modal
-            transparent={true}
-            visible={modalCategoryVisible}
-            animationType="fade"
-        >
+      <FlatList
+        showsVerticalScrollIndicator={false}
+        style={{ flex: 1, marginTop: 24 }}
+        data={items}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <ListItem data={item} />}
+      />
 
-          {/*PEGA AS CATEGORIAS, SELECIONA E FECHA O MODAL*/}
-            <ModalPicker
-                handleCloseModal={ () => setModalCategoryVisible(false) }
-                options={category}
-                selectedItem={ handleChangeCategory } //RECEBE O ITEM SELECIONADO DE ORDER E MUDA A CATEGORIA 
+      {/* MODAL CATEGORIAS */}
+      <Modal
+        transparent={true}
+        visible={modalCategoryVisible}
+        animationType="fade"
+      >
+        <ModalPicker
+          handleCloseModal={() => setModalCategoryVisible(false)}
+          options={category}
+          selectedItem={handleChangeCategory} //RECEBE O ITEM SELECIONADO DE ORDER E MUDA A CATEGORIA
+        />
+      </Modal>
 
-            />
-
-        </Modal>
-
+      {/* MODAL PRODUTOS */}
+      <Modal
+        transparent={true}
+        visible={modalProductVisible}
+        animationType="fade"
+      >
+        <ModalPicker
+          handleCloseModal={() => setModalProductVisible(false)}
+          options={products}
+          selectedItem={handleChangeProduct}
+        />
+      </Modal>
     </View>
   );
 }
