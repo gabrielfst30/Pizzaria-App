@@ -1,7 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from "react-native";
 
-
 import { CategoryProps } from "../../pages/Order";
 
 interface ModalPickerProps {
@@ -26,12 +25,12 @@ export function ModalPicker({ options, handleCloseModal, selectedItem }: ModalPi
       <TouchableOpacity key={index} style={styles.option} onPress={ () => onPressItem(item)}>
         <Text style={styles.item}>
           {item?.name}
-        </Text>
+      </Text>
       </TouchableOpacity>
   ))
 
 
-  return (
+  return(
     <TouchableOpacity style={styles.container} onPress={handleCloseModal}>
       <View style={styles.content}>
         <ScrollView showsVerticalScrollIndicator={false}>
