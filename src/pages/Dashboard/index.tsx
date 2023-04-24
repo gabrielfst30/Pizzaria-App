@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Button, SafeAreaView, TouchableOpacity, TextInput, StyleSheet } from "react-native";
+import { Text, SafeAreaView, TouchableOpacity, TextInput, StyleSheet } from "react-native";
 
 import { useNavigation } from "@react-navigation/native"; 
 
@@ -51,7 +51,6 @@ export default function Dashboard(){
             <TouchableOpacity style={styles.button} onPress={openOrder}>
                 <Text style={styles.buttonText}>Abrir mesa</Text>
             </TouchableOpacity>
-
         </SafeAreaView>
     )
 }
