@@ -16,6 +16,10 @@ import { api } from "../../services/api";
 import { ModalPicker } from "../../components/ModalPicker";
 import { ListItem } from "../../components/ListItem";
 
+//NAVIGATION
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { StackParamsList } from "../../routes/app.routes";
+
 //tipando parametros da order
 type RouteDetailParams = {
   Order: {
@@ -47,7 +51,7 @@ type OrderRouteProps = RouteProp<RouteDetailParams, "Order">;
 
 export default function Order() {
   const route = useRoute<OrderRouteProps>();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<StackParamsList>>();
 
   //LISTAGEM DE CATEGORIAS
   const [category, setCategory] = useState<CategoryProps[] | []>([]); //pode ser uma array categoryprops ou array vazia
@@ -127,16 +131,60 @@ export default function Order() {
 
   //ADICIONANDO PRODUTO A LISTA
   async function handleAdd() {
-   alert("CLICOUuuuu");
+   
+   //Faz a chamada
+   const response = await api.post('/order/add', {
+      order_id: route.params?.order_id,
+      product_id: productSelected?.id,
+      amount: Number(amount)
+   })
+
+    //Repassa os dados para data
+    let data = {
+      id: response.data.id,
+      product_id: productSelected?.id as string,
+      name: productSelected?.name as string,
+      amount: amount
+    }
+
+    //Pegando a array antiga e adicionando sempre um a mais para lista
+    setItems(oldArray => [...oldArray, data])
+
+  }
+
+  //DELETANDO ITEM DA LISTA DE ITEMS
+  async function handleDeleteItem(item_id:string){
+    await api.delete('/order/remove',{
+      params:{
+        item_id: item_id
+      }
+    })
+
+    //após remover da api removemos esse item da nossa lista de items
+    let removeItem = items.filter( item => {
+      return (item.id !== item_id)
+    })
+
+    setItems(removeItem)
+  }
+
+  function handleFinishOrder(){
+    navigation.navigate("FinishOrder", {
+      //Quando navegar para tela Finish irá enviar esses parametros
+      number: route.params?.number,
+      order_id: route.params?.order_id
+    })
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Mesa {route.params.number}</Text>
-        <TouchableOpacity onPress={handleCloseOrder}>
+        {items.length === 0 && (
+          <TouchableOpacity onPress={handleCloseOrder}>
           <Feather name="trash-2" size={28} color="#FF3F4B" />
         </TouchableOpacity>
+        )}
       </View>
 
       {category.length !== 0 && (
@@ -181,6 +229,7 @@ export default function Order() {
         <TouchableOpacity
           style={[styles.button, { opacity: items.length === 0 ? 0.3 : 1 }]}
           disabled={items.length === 0}
+          onPress={handleFinishOrder}
         >
           <Text style={styles.buttonText}>Avançar</Text>
         </TouchableOpacity>
@@ -191,7 +240,7 @@ export default function Order() {
         style={{ flex: 1, marginTop: 24 }}
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <ListItem data={item} />}
+        renderItem={({ item }) => <ListItem data={item} deleteItem={handleDeleteItem}/>}
       />
 
       {/* MODAL CATEGORIAS */}
