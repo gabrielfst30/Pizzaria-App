@@ -44,7 +44,7 @@ export default function FinishOrder(){
 
             <TouchableOpacity style={styles.button} onPress={handleFinish}>
                 <Text style={styles.textButton}>Finalizar pedido</Text>
-                <Feather name="shopping-cart" size={20} color="1d1d2e"/>
+                <Feather name="shopping-cart" size={20} color="#1d1d2e"/>
             </TouchableOpacity>
         </View>
     )
